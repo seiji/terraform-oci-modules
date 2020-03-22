@@ -6,6 +6,10 @@ variable stage {
   type = string
 }
 
+variable name {
+  default = ""
+}
+
 variable attributes {
   default = []
 }
@@ -18,11 +22,17 @@ variable cidr_block {
   type = string
 }
 
+variable dns_label {
+  type    = string
+  default = null
+}
 
-  # #Optional
-  # defined_tags = {"Operations.CostCenter"= "42"}
-  # display_name = "${var.vcn_display_name}"
-  # dns_label = "${var.vcn_dns_label}"
-  # freeform_tags = {"Department"= "Finance"}
-  # ipv6cidr_block = "${var.vcn_ipv6cidr_block}"
-  # is_ipv6enabled = "${var.vcn_is_ipv6enabled}"
+variable ipv6cidr_block {
+  type    = string
+  default = null
+}
+
+variable is_ipv6enabled {
+  type    = bool
+  default = null
+}

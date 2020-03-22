@@ -1,12 +1,27 @@
+module label {
+  source     = "../label"
+  namespace  = var.namespace
+  stage      = var.stage
+  name       = var.name
+  attributes = var.attributes
+}
+
 resource oci_core_vcn this {
-  cidr_block = var.cidr_block
+  cidr_block     = var.cidr_block
   compartment_id = var.compartment_id
 
-#   #Optional
-#   defined_tags = {"Operations.CostCenter"= "42"}
-#   display_name = "${var.vcn_display_name}"
-#   dns_label = "${var.vcn_dns_label}"
-#   freeform_tags = {"Department"= "Finance"}
-#   ipv6cidr_block = "${var.vcn_ipv6cidr_block}"
-#   is_ipv6enabled = "${var.vcn_is_ipv6enabled}"
+  display_name   = module.label.id
+  dns_label      = var.dns_label
+  ipv6cidr_block = var.ipv6cidr_block
+  is_ipv6enabled = var.is_ipv6enabled
+
+  defined_tags  = module.label.defined_tags
+  freeform_tags = module.label.freeform_tags
+
+  lifecycle {
+    ignore_changes = [
+      defined_tags,
+      freeform_tags,
+    ]
+  }
 }
