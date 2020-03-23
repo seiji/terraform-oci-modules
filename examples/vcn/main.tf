@@ -1,6 +1,6 @@
 locals {
   namespace = "default"
-  stage     = "developement"
+  stage     = "development"
 }
 
 module compartment_development {
@@ -16,6 +16,15 @@ module vcn {
   namespace      = local.namespace
   stage          = local.stage
   compartment_id = module.compartment_development.compartment_id
-  cidr_block     = "10.0.0.0/16"
   dns_label      = local.stage
+  cidr_block     = "10.0.0.0/16"
+
+  subnets = {
+    public = {
+      cidr_block = "10.0.0.0/24"
+    }
+    private = {
+      cidr_block = "10.0.1.0/24"
+    }
+  }
 }

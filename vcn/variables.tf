@@ -36,3 +36,14 @@ variable is_ipv6enabled {
   type    = bool
   default = null
 }
+
+variable subnets {
+  type = object({
+    public = object({
+      cidr_block = string
+    })
+    private = object({
+      cidr_block = string
+    })
+  })
+}
