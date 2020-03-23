@@ -4,7 +4,7 @@ locals {
 }
 
 module compartment_development {
-  source      = "../../compartment"
+  source      = "../../../compartment"
   namespace   = local.namespace
   stage       = local.stage
   name        = local.stage
@@ -12,7 +12,7 @@ module compartment_development {
 }
 
 module vcn {
-  source         = "../../vcn"
+  source         = "../../../vcn"
   namespace      = local.namespace
   stage          = local.stage
   compartment_id = module.compartment_development.compartment_id

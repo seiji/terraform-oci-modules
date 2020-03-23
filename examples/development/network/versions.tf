@@ -2,7 +2,7 @@ terraform {
   required_version = "~> 0.12.0"
   backend "s3" {
     bucket   = "terraform-state"
-    key      = "vcn-development.tfstate"
+    key      = "development/network.tfstate"
     region   = "ap-tokyo-1"
     endpoint = "https://nrapqa8w4izn.compat.objectstorage.ap-tokyo-1.oraclecloud.com"
 
