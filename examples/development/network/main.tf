@@ -12,7 +12,7 @@ module compartment_development {
 }
 
 module vcn {
-  source         = "../../../vcn"
+  source         = "../../../core_vcn"
   namespace      = local.namespace
   stage          = local.stage
   compartment_id = module.compartment_development.compartment_id
