@@ -36,7 +36,7 @@ resource oci_core_subnet public {
   display_name               = "Public Subnet-${module.label.id}"
   dns_label                  = "publicsubnet"
   freeform_tags              = module.label.freeform_tags
-  prohibit_public_ip_on_vnic = false
+  prohibit_public_ip_on_vnic = true
   route_table_id             = oci_core_vcn.this.default_route_table_id
   security_list_ids          = [oci_core_vcn.this.default_security_list_id]
 
@@ -61,7 +61,7 @@ resource oci_core_subnet private {
   display_name               = "Private Subnet-${module.label.id}"
   dns_label                  = "privatesubnet"
   freeform_tags              = module.label.freeform_tags
-  prohibit_public_ip_on_vnic = false
+  prohibit_public_ip_on_vnic = true
   route_table_id             = oci_core_route_table.private.id
   security_list_ids          = [oci_core_vcn.this.default_security_list_id]
 
