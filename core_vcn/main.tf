@@ -34,7 +34,7 @@ resource oci_core_subnet public {
   defined_tags               = module.label.defined_tags
   dhcp_options_id            = oci_core_vcn.this.default_dhcp_options_id
   display_name               = "Public Subnet-${module.label.id}"
-  dns_label                  = "publicsubnet"
+  dns_label                  = "public"
   freeform_tags              = module.label.freeform_tags
   prohibit_public_ip_on_vnic = false
   route_table_id             = oci_core_vcn.this.default_route_table_id
@@ -59,7 +59,7 @@ resource oci_core_subnet private {
   defined_tags               = module.label.defined_tags
   dhcp_options_id            = oci_core_vcn.this.default_dhcp_options_id
   display_name               = "Private Subnet-${module.label.id}"
-  dns_label                  = "privatesubnet"
+  dns_label                  = "private"
   freeform_tags              = module.label.freeform_tags
   prohibit_public_ip_on_vnic = true
   route_table_id             = oci_core_route_table.private.id
