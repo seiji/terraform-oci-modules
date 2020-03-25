@@ -63,7 +63,7 @@ resource oci_core_subnet private {
   freeform_tags              = module.label.freeform_tags
   prohibit_public_ip_on_vnic = true
   route_table_id             = oci_core_route_table.private.id
-  security_list_ids          = [oci_core_vcn.this.default_security_list_id]
+  security_list_ids          = [oci_core_security_list.private.id]
 
   depends_on = [
     oci_core_vcn.this,
@@ -192,6 +192,61 @@ resource oci_core_route_table private {
   }
 }
 
+resource oci_core_default_security_list default {
+  manage_default_resource_id = oci_core_vcn.this.default_security_list_id
+
+  ingress_security_rules {
+    protocol    = "6"
+    source      = var.cidr_block
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+
+    tcp_options {
+      max = 65535
+      min = 1
+    }
+  }
+  ingress_security_rules {
+    protocol = 6
+    source   = "0.0.0.0/0"
+    tcp_options {
+      min = "22"
+      max = "22"
+    }
+  }
+  ingress_security_rules {
+    protocol    = "1"
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+
+    icmp_options {
+      code = 4
+      type = 3
+    }
+  }
+  ingress_security_rules {
+    protocol    = "1"
+    source      = var.cidr_block
+    source_type = "CIDR_BLOCK"
+    stateless   = false
+
+    icmp_options {
+      code = -1
+      type = 3
+    }
+  }
+
+  egress_security_rules {
+    destination = "0.0.0.0/0"
+    protocol    = "all"
+  }
+
+  depends_on = [
+    oci_core_vcn.this,
+  ]
+}
+
 resource oci_core_security_list private {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.this.id
@@ -207,8 +262,8 @@ resource oci_core_security_list private {
     stateless   = false
 
     tcp_options {
-      max = 22
-      min = 22
+      max = 65535
+      min = 1
     }
   }
   ingress_security_rules {

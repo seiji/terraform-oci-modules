@@ -17,7 +17,8 @@ data terraform_remote_state network {
 locals {
   namespace = "default"
   stage     = "development"
-  shape     = "VM.Standard.E2.1"
+  # shape     = "VM.Standard.E2.1.Micro"
+  shape = "VM.Standard.E2.1"
 
   compartment_id    = data.terraform_remote_state.network.outputs.compartment_id
   vcn_id            = data.terraform_remote_state.network.outputs.vcn_id
@@ -55,8 +56,83 @@ module instances_bastion {
   }
   metadata = {
     ssh_authorized_keys = var.ssh_public_key
+    user_data           = null
   }
   source_details = {
     source_id = data.oci_core_images.this.images[0].id
   }
 }
+
+data template_file cloud_init {
+  template = file("./templates/cloud-init.yml")
+  vars = {
+  }
+}
+
+module instances_app {
+  source              = "../../../core_instances"
+  namespace           = local.namespace
+  stage               = local.stage
+  attributes          = ["app"]
+  availability_domain = data.oci_identity_availability_domains.this.availability_domains[0].name
+  compartment_id      = local.compartment_id
+  shape               = local.shape
+  create_vnic_details = {
+    subnet_id        = local.subnet_private_id
+    assign_public_ip = false
+  }
+  metadata = {
+    ssh_authorized_keys = var.ssh_public_key
+    user_data           = base64encode(data.template_file.cloud_init.rendered)
+  }
+  source_details = {
+    source_id = data.oci_core_images.this.images[0].id
+  }
+}
+
+module subnet_lb {
+  source         = "../../../core_vcn_subnet"
+  namespace      = local.namespace
+  stage          = local.stage
+  attributes     = ["lb"]
+  compartment_id = local.compartment_id
+  vcn_id         = local.vcn_id
+  cidr_block     = "10.0.2.0/24"
+  dhcp_options_id = ""
+  prohibit_public_ip_on_vnic = false
+  route_table_id = ""
+  security_list_ids = []
+}
+
+# module sl_lb {
+#   source         = "../../../core_security_list"
+#   namespace      = local.namespace
+#   stage          = local.stage
+#   attributes     = ["lb"]
+#   compartment_id = local.compartment_id
+#   vcn_id         = local.vcn_id
+#   ingress_security_rules = [
+#     {
+#       source       = "0.0.0.0/0"
+#       protocol     = "6"
+#       source_type  = "CIDR_BLOCK"
+#       stateless    = false
+#       icmp_options = null
+#       tcp_options = {
+#         min = 80
+#         max = 80
+#       }
+#     },
+#     {
+#       source       = "0.0.0.0/0"
+#       protocol     = "6"
+#       source_type  = "CIDR_BLOCK"
+#       stateless    = false
+#       icmp_options = null
+#       tcp_options = {
+#         min = 443
+#         max = 443
+#       }
+#     }
+#   ]
+# }

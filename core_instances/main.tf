@@ -38,7 +38,7 @@ resource oci_core_instance this {
   }
   metadata = {
     ssh_authorized_keys = var.metadata.ssh_authorized_keys
-    # user_data = "${base64encode(file(var.custom_bootstrap_file_name))}"
+    user_data           = var.metadata.user_data
   }
   source_details {
     source_id   = var.source_details.source_id

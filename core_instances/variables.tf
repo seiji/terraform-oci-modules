@@ -36,6 +36,7 @@ variable create_vnic_details {
 variable metadata {
   type = object({
     ssh_authorized_keys = string
+    user_data           = string
   })
 }
 
