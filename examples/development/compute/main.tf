@@ -20,10 +20,15 @@ locals {
   # shape     = "VM.Standard.E2.1.Micro"
   shape = "VM.Standard.E2.1"
 
-  compartment_id    = data.terraform_remote_state.network.outputs.compartment_id
-  vcn_id            = data.terraform_remote_state.network.outputs.vcn_id
-  subnet_public_id  = data.terraform_remote_state.network.outputs.subnet_public_id
-  subnet_private_id = data.terraform_remote_state.network.outputs.subnet_private_id
+  compartment_id            = data.terraform_remote_state.network.outputs.compartment_id
+  vcn_id                    = data.terraform_remote_state.network.outputs.vcn_id
+  subnet_public_id          = data.terraform_remote_state.network.outputs.subnet_public_id
+  subnet_public_cidr_block  = data.terraform_remote_state.network.outputs.subnet_public_cidr_block
+  subnet_private_id         = data.terraform_remote_state.network.outputs.subnet_private_id
+  subnet_private_cidr_block = data.terraform_remote_state.network.outputs.subnet_private_cidr_block
+  default_dhcp_options_id   = data.terraform_remote_state.network.outputs.default_dhcp_options_id
+  default_route_table_id    = data.terraform_remote_state.network.outputs.default_route_table_id
+  default_security_list_id  = data.terraform_remote_state.network.outputs.default_security_list_id
 }
 
 data oci_identity_availability_domains this {
@@ -90,49 +95,58 @@ module instances_app {
   }
 }
 
-module subnet_lb {
-  source         = "../../../core_vcn_subnet"
+module sl_lb {
+  source         = "../../../core_security_list"
   namespace      = local.namespace
   stage          = local.stage
   attributes     = ["lb"]
   compartment_id = local.compartment_id
   vcn_id         = local.vcn_id
-  cidr_block     = "10.0.2.0/24"
-  dhcp_options_id = ""
-  prohibit_public_ip_on_vnic = false
-  route_table_id = ""
-  security_list_ids = []
+  ingress_security_rules = [
+    {
+      source       = "0.0.0.0/0"
+      protocol     = "6"
+      source_type  = "CIDR_BLOCK"
+      stateless    = false
+      icmp_options = null
+      tcp_options = {
+        min = 80
+        max = 80
+      }
+    },
+    {
+      source       = "0.0.0.0/0"
+      protocol     = "6"
+      source_type  = "CIDR_BLOCK"
+      stateless    = false
+      icmp_options = null
+      tcp_options = {
+        min = 443
+        max = 443
+      }
+    }
+  ]
+  egress_security_rules = {
+    destination = local.subnet_private_cidr_block
+    protocol    = "6"
+    tcp_options = {
+      min = 80
+      max = 80
+    }
+  }
 }
 
-# module sl_lb {
-#   source         = "../../../core_security_list"
-#   namespace      = local.namespace
-#   stage          = local.stage
-#   attributes     = ["lb"]
-#   compartment_id = local.compartment_id
-#   vcn_id         = local.vcn_id
-#   ingress_security_rules = [
-#     {
-#       source       = "0.0.0.0/0"
-#       protocol     = "6"
-#       source_type  = "CIDR_BLOCK"
-#       stateless    = false
-#       icmp_options = null
-#       tcp_options = {
-#         min = 80
-#         max = 80
-#       }
-#     },
-#     {
-#       source       = "0.0.0.0/0"
-#       protocol     = "6"
-#       source_type  = "CIDR_BLOCK"
-#       stateless    = false
-#       icmp_options = null
-#       tcp_options = {
-#         min = 443
-#         max = 443
-#       }
-#     }
-#   ]
-# }
+module subnet_lb {
+  source                     = "../../../core_vcn_subnet"
+  namespace                  = local.namespace
+  stage                      = local.stage
+  attributes                 = ["lb"]
+  compartment_id             = local.compartment_id
+  vcn_id                     = local.vcn_id
+  cidr_block                 = "10.0.2.0/24"
+  dhcp_options_id            = local.default_dhcp_options_id
+  prohibit_public_ip_on_vnic = false
+  route_table_id             = local.default_route_table_id
+  security_list_ids          = [module.sl_lb.id]
+}
+

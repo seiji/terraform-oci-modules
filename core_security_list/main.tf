@@ -38,9 +38,19 @@ resource oci_core_security_list this {
     }
   }
 
-  egress_security_rules {
-    destination = "0.0.0.0/0"
-    protocol    = "all"
+  dynamic egress_security_rules {
+    for_each = [var.egress_security_rules]
+    content {
+      destination = egress_security_rules.value.destination
+      protocol    = egress_security_rules.value.protocol
+      dynamic tcp_options {
+        for_each = [for o in egress_security_rules.value.tcp_options != null ? [egress_security_rules.value.tcp_options] : [] : o]
+        content {
+          max = tcp_options.value.max
+          min = tcp_options.value.min
+        }
+      }
+    }
   }
 
   lifecycle {

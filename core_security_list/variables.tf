@@ -39,3 +39,19 @@ variable ingress_security_rules {
     })
   }))
 }
+
+variable egress_security_rules {
+  type = object({
+    destination = string
+    protocol    = string
+    tcp_options = object({
+      min = number
+      max = number
+    })
+  })
+  default = {
+    destination = "0.0.0.0/0"
+    protocol    = "all"
+    tcp_options = null
+  }
+}
