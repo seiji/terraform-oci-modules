@@ -150,3 +150,21 @@ module subnet_lb {
   security_list_ids          = [module.sl_lb.id]
 }
 
+module lb {
+  source         = "../../../load_balancer"
+  namespace      = local.namespace
+  stage          = local.stage
+  attributes     = []
+  compartment_id = local.compartment_id
+  subnet_ids     = [module.subnet_lb.id]
+  is_private     = false
+  backend = {
+    ip_address = module.instances_app.private_ip
+    port       = 80
+  }
+  listener = {
+    protocol = "HTTP"
+    port     = 80
+  }
+}
+
